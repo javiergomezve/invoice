@@ -97,4 +97,50 @@ class InvoiceController extends Controller
 
         return response()->json(['form' => $form]);
     }
+
+    public function update($id, Request $request)
+    {
+        $invoice = Invoice::findOrFail($id);
+
+        $this->validate($request, [
+            'customer_id' => 'required|integer|exists:customers,id',
+            'date' => 'required|date_format:Y-m-d',
+            'due_date' => 'required|date_format:Y-m-d',
+            'reference' => 'nullable|max:100',
+            'discount' => 'required|numeric|min:0',
+            'terms_and_conditions' => 'required|max:2000',
+            'items' => 'required|array|min:1',
+            'items.*.id' => 'sometimes|required|integer|exists:invoice_items,id,invoice_id'.$invoice->id,
+            'items.*.product_id' => 'required|integer|exists:products,id',
+            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.qty' => 'required|numeric|min:1',
+        ]);
+
+        $invoice->fill($request->except('items'));
+        $invoice->sub_total = collect($request->items)->sum(function ($item) {
+            return $item['qty'] * $item['unit_price'];
+        });
+
+        $invoice = DB::transaction(function () use ($invoice, $request) {
+            $invoice->updateHasMany([
+                'items' => $request->items
+            ]);
+
+            return $invoice;
+        });
+
+        return response()
+            ->json(['saved' => true, 'id' => $invoice->id]);
+    }
+
+    public function destroy($id)
+    {
+        $invoice = Invoice::findOrFail($id);
+
+        $invoice->items()->delete();
+        $invoice->delete();
+
+        return response()
+            ->json(['deleted' => true]);
+    }
 }

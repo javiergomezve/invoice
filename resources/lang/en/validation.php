@@ -142,6 +142,10 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'items.*.product_id' => 'item description',
+        'items.*.unit_price' => 'unit price',
+        'item.*.qty' => 'qty',
+    ],
 
 ];
