@@ -8,7 +8,7 @@ export function get(url, params) {
     });
 }
 
-export function myMethod(method, url, data) {
+export function byMethod(method, url, data) {
     return axios({
         method: method,
         url: url,
