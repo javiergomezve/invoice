@@ -4,7 +4,7 @@
             <span class="panel-title">{{model.number}}</span>
             <div>
                 <router-link to="/invoices" class="btn">Back</router-link>
-                <router-link to="`/invoices/$model.id}/edit`" class="btn">Edit</router-link>
+                <router-link :to="`/invoices/${model.id}/edit`" class="btn">Edit</router-link>
                 <button class="btn btn-delete" @click="deleteItem">Delete</button>
             </div>
         </div>
@@ -130,6 +130,8 @@
             setData(res) {
                 Vue.set(this.$data, 'model', res.data.model)
                 this.show = true
+
+                this.$bar.finish()
             },
             deleteItem() {
                 byMethod('delete', `/api/invoices/${this.model.id}`)
